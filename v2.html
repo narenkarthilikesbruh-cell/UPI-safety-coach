@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPI Safety Coach</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 14px;
+      font-family: Arial, sans-serif;
+      background: #edf8f1;
+      color: #173c2b;
+    }
+
+    .app {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 24px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 8px 28px #164a2b16;
+    }
+
+    h1 { color: #087443; margin-top: 0; }
+
+    .warning {
+      background: #fff3cd;
+      padding: 13px;
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin: 6px 0;
+      border: 1px solid #168653;
+      border-radius: 10px;
+      background: #f2fff7;
+      color: #173c2b;
+      cursor: pointer;
+      text-align: left;
+      font-size: 15px;
+    }
+
+    button:hover { background: #d8f5e4; }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #b5cdbd;
+      border-radius: 9px;
+      font-size: 15px;
+      margin: 8px 0;
+    }
+
+    .check-button {
+      background: #087443;
+      color: white;
+      text-align: center;
+    }
+
+    #answer {
+      margin-top: 18px;
+      padding: 16px;
+      background: #e7f7ed;
+      border-radius: 10px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    a { color: #087443; }
+    .small { color: #52685b; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>🛡️ UPI Safety Coach</h1>
+    <p>Unsure about a UPI request? Check the warning signs before acting.</p>
+
+    <p class="warning">
+      ⚠️ <strong>Never share your UPI PIN or OTP.</strong>
+      Never enter real banking details into this educational chatbot.
+    </p>
+
+    <h3>Choose a situation</h3>
+    <div id="choices"></div>
+
+    <h3>Or describe what happened</h3>
+    <input id="message" maxlength="500"
+      placeholder="Describe the situation without personal details">
+    <button class="check-button" onclick="checkMessage()">
+      Check situation
+    </button>
+
+    <div id="answer" aria-live="polite">
+      Choose a situation above to receive safety advice.
+    </div>
+
+    <p class="small">
+      Educational guidance only; this tool cannot guarantee whether a
+      transaction or caller is genuine.
+    </p>
+  </main>
+
+  <script>
+    const scenarios = [
+      {
+        name: "QR code to receive money",
+        keys: ["qr code", "scan to receive", "scan qr"],
+        reason: "A QR code and PIN may be used to send money, not receive it.",
+        action: "Do not scan an unexpected QR code or enter your PIN to receive money."
+      },
+      {
+        name: "Fake refund call",
+        keys: ["refund", "refund call"],
+        reason: "A caller may pretend to issue a refund to trick you into approving a payment.",
+        action: "Check refund status in the official app or with the organisation using a verified contact."
+      },
+      {
+        name: "Someone asks for an OTP",
+        keys: ["otp", "one time password", "verification code"],
+        reason: "An OTP can authorise an account action or payment.",
+        action: "Never share an OTP with a caller or stranger. Contact your bank through its official channel."
+      },
+      {
+        name: "Accidental payment story",
+        keys: ["accidental payment", "sent by mistake", "wrong transfer"],
+        reason: "A stranger may pressure you to send money without proper verification.",
+        action: "Check your bank statement and contact your bank. Do not send money to a different account based only on a caller's claim."
+      },
+      {
+        name: "Screen-sharing app request",
+        keys: ["screen sharing", "screen share", "remote access", "anydesk"],
+        reason: "Remote-access apps can expose private information or allow control of your device.",
+        action: "Do not install an app at a stranger's request. If already installed, disconnect and seek trusted technical help."
+      },
+      {
+        name: "Fake customer care",
+        keys: ["customer care", "helpline", "support number"],
+        reason: "Fake support contacts may ask for secret details or trick you into making a payment.",
+        action: "Find support details through your bank's official website or payment app."
+      },
+      {
+        name: "KYC update threat",
+        keys: ["kyc", "account blocked", "account will be blocked"],
+        reason: "Fraudsters may threaten account suspension to pressure you into sharing details.",
+        action: "Do not follow suspicious links. Verify any KYC request directly with your bank."
+      },
+      {
+        name: "Collect request",
+        keys: ["collect request", "payment request", "approve request"],
+        reason: "Approving a collect request can authorise money to leave your account.",
+        action: "Reject unexpected requests and read the payment screen carefully before approving anything."
+      },
+      {
+        name: "Prize or lottery fee",
+        keys: ["lottery", "prize money", "claim prize", "processing fee"],
+        reason: "Unexpected prizes that require an advance fee are a common fraud warning sign.",
+        action: "Do not pay to claim an unexpected prize. Verify the offer independently."
+      },
+      {
+        name: "Fake job registration fee",
+        keys: ["job fee", "registration fee", "job offer"],
+        reason: "Scammers may use fake jobs to demand money or personal information.",
+        action: "Verify the employer through official channels and do not pay suspicious upfront fees."
+      },
+      {
+        name: "Fake cashback offer",
+        keys: ["cashback", "cash back", "reward points"],
+        reason: "Fake rewards may be used to make you click unsafe links or approve payments.",
+        action: "Check offers only inside the official payment app. Never enter your PIN to receive cashback."
+      },
+      {
+        name: "Suspicious payment link",
+        keys: ["payment link", "unknown link", "click this link", "short link"],
+        reason: "A deceptive link may lead to a fake website or request a payment.",
+        action: "Do not open unexpected payment links. Use the official app or type the verified website address yourself."
+      },
+      {
+        name: "Fake bank officer",
+        keys: ["bank officer", "bank official", "police officer", "digital arrest"],
+        reason: "A person claiming authority may use fear to demand money or confidential information.",
+        action: "End the call and contact the institution using a verified number. Do not transfer money under pressure."
+      },
+      {
+        name: "UPI PIN requested to receive money",
+        keys: ["pin to receive", "upi pin", "enter pin to receive"],
+        reason: "Your UPI PIN is used to authorise payments, not to receive money.",
+        action: "Do not enter or reveal your PIN to receive money. Cancel the request if it seems suspicious."
+      },
+      {
+        name: "Unknown person asks for money",
+        keys: ["urgent money", "send money urgently", "unknown person", "emergency transfer"],
+        reason: "A scammer may impersonate someone or create urgency to stop you verifying the story.",
+        action: "Verify the person's identity through another trusted channel before considering any transfer."
+      }
+    ];
+
+    function showScenario(s) {
+      document.getElementById("answer").textContent =
+        "⚠️ VERDICT: Potential scam — be cautious.\n\n" +
+        "WHY: " + s.reason + "\n\n" +
+        "WHAT TO DO: " + s.action +
+        "\n\nIf you have lost money to suspected cyber fraud in India, call 1930 promptly and report at https://cybercrime.gov.in/.";
+    }
+
+    const choices = document.getElementById("choices");
+
+    scenarios.forEach(s => {
+      const button = document.createElement("button");
+      button.textContent = s.name;
+      button.onclick = () => showScenario(s);
+      choices.appendChild(button);
+    });
+
+    function checkMessage() {
+      const text = document.getElementById("message").value.toLowerCase().trim();
+
+      if (!text) {
+        document.getElementById("answer").textContent =
+          "Please describe the situation without including personal or banking details.";
+        return;
+      }
+
+      const matches = scenarios.filter(s =>
+        s.keys.some(k => text.includes(k))
+      );
+
+      if (matches.length > 0) {
+        showScenario(matches[0]);
+      } else {
+        document.getElementById("answer").textContent =
+          "VERDICT: Unable to determine from these keywords.\n\n" +
+          "This does not mean the situation is safe. Do not share your PIN or OTP, click suspicious links, or transfer money under pressure. Verify with your bank using an official channel.\n\n" +
+          "If you have lost money to suspected cyber fraud in India, call 1930 promptly and report at https://cybercrime.gov.in/.";
+      }
+    }
+
+    document.getElementById("message").addEventListener("keydown", event => {
+      if (event.key === "Enter") checkMessage();
+    });
+  </script>
+</body>
+</html>
